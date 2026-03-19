@@ -1,0 +1,37 @@
+# Ambientes virtuais
+venv/
+.env
+.env.local
+.env.*
+*.env
+
+# Python bytecode e caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos de distribuição e builds
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Logs e temporários
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+
+# IDEs e editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Arquivos grandes ou sensíveis (opcional, mas útil)
+*.pdf    # se você colocar exemplos de PDFs no repo (melhor não commitar)
+*.txt    # mesmos motivos
