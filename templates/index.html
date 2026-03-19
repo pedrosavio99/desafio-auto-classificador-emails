@@ -1,38 +1,144 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classificador de Emails com IA</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classificador de Emails – AutoU</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-        body { padding: 40px 20px; background-color: #f8f9fa; }
-        .container { max-width: 850px; }
-        h1 { color: #0d6efd; font-weight: 600; }
-        .card { box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body {
+            padding: 40px 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+        }
+        h1 {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        .card {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+        }
+        .example-card {
+            background-color: #ffffff;
+        }
+        pre.example {
+            background: #f1f3f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center mb-4">Classificador Inteligente de Emails</h1>
-        <p class="lead text-center mb-5">Envie o email (.txt ou .pdf) ou cole o texto abaixo.<br>A IA classifica e sugere resposta automática.</p>
+        <p class="lead text-center text-muted mb-5">
+            Automatize a classificação de emails recebidos pela equipe da AutoU.<br />
+            Identifique se são <strong>Produtivo</strong> ou <strong>Improdutivo</strong> e receba sugestão de resposta automática.
+        </p>
 
-        <div class="card p-4">
+        <div class="card p-4 mb-5">
             <form method="POST" action="/processar" enctype="multipart/form-data">
                 <div class="mb-4">
-                    <label class="form-label fw-bold">Cole o texto do email:</label>
-                    <textarea class="form-control" name="texto_email" rows="8" placeholder="Cole aqui o conteúdo completo..."></textarea>
+                    <label class="form-label fw-bold">Cole o texto do email aqui:</label>
+                    <textarea id="textoEmail" class="form-control" name="texto_email" rows="7"
+                        placeholder="Exemplo: Olá, qual o status da minha solicitação de financiamento? Protocolo 98765..."></textarea>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label fw-bold">Ou faça upload do arquivo:</label>
-                    <input type="file" class="form-control" name="arquivo" accept=".txt,.pdf">
+                    <input id="arquivoInput" type="file" class="form-control" name="arquivo" accept=".txt,.pdf" />
+                    <small class="form-text text-muted">Formatos aceitos: .txt ou .pdf (máximo 16 MB)</small>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-lg w-100">Analisar Email</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-lg w-100" disabled>
+                    <span id="btnText">Analisar Email</span>
+                    <span id="spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                </button>
             </form>
+
+            <div class="mt-4 text-center text-muted small">
+                Processamento via Groq AI • Respostas geradas por inteligência artificial
+            </div>
         </div>
+
+        <!-- Seção de Exemplos -->
+        <div class="card example-card p-4">
+            <h4 class="text-center mb-4">Exemplos de Classificação</h4>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h5 class="text-success">Produtivo (exemplo)</h5>
+                    <pre class="example">Assunto: Solicitação de status - Protocolo 123456
+Olá equipe AutoU,
+
+Gostaria de saber o andamento da minha solicitação de abertura de conta, protocolo 123456, iniciada em 10/03/2026. Já enviei os documentos solicitados. Podem me atualizar?
+
+Obrigado!
+João Silva</pre>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-danger">Improdutivo (exemplo)</h5>
+                    <pre class="example">Assunto: Feliz aniversário!
+
+Parabéns a toda equipe da AutoU pelo aniversário da empresa! Que venham muitos anos de sucesso e prosperidade! 🎉🎂
+
+Abraços,
+Maria Oliveira</pre>
+                </div>
+            </div>
+            <p class="text-center mt-3 text-muted small">
+                Teste com esses exemplos copiando e colando no campo acima.
+            </p>
+        </div>
+
+        <footer class="text-center mt-5 text-muted small">
+            Desenvolvido por Pedro Savio • 
+            <a href="https://psvo.netlify.app" target="_blank" class="text-muted">confira meu portfolio!!</a>
+        </footer>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+            const button = document.getElementById("submitBtn");
+            const spinner = document.getElementById("spinner");
+            const text = document.getElementById("btnText");
+
+            const textarea = document.getElementById("textoEmail");
+            const fileInput = document.getElementById("arquivoInput");
+
+            function validarCampos() {
+                const temTexto = textarea.value.trim().length > 0;
+                const temArquivo = fileInput.files.length > 0;
+                button.disabled = !(temTexto || temArquivo);
+            }
+
+            // escuta mudanças
+            textarea.addEventListener("input", validarCampos);
+            fileInput.addEventListener("change", validarCampos);
+
+            // submit com feedback visual
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                button.disabled = true;
+                spinner.classList.remove("d-none");
+                text.textContent = "Analisando...";
+
+                // Força renderização antes de submeter
+                setTimeout(() => {
+                    form.submit();
+                }, 50);
+            });
+
+            // valida na carga inicial (já está disabled, mas por segurança)
+            validarCampos();
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
